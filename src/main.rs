@@ -11,7 +11,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use clap::Parser;
 
-/// Simple program to greet a person
+/// A command-line tool for managing monitor configurations with Hyprland.
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
