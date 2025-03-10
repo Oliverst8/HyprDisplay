@@ -3,6 +3,17 @@
 version = 4
 
 [[package]]
+name = "HyprDisplay"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "hyprland",
+ "notify-rust",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -589,17 +600,6 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
-
-[[package]]
-name = "hyprDisplay"
-version = "0.1.0"
-dependencies = [
- "clap",
- "hyprland",
- "notify-rust",
- "serde",
- "serde_json",
-]
 
 [[package]]
 name = "hyprland"
