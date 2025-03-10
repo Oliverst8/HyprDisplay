@@ -189,11 +189,76 @@ fn setup() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn send_notication(content: &String) {
+fn send_notification(content: &String) {
     Notification::new()
         .summary("HyprDisplay")
         .body(content)
         .show().expect("Error sending notification");
+}
+
+fn set_monitor_mode(monitor_mode: u8, primary_monitor: &Monitor, secondary_monitor: &Monitor) {
+    match monitor_mode {
+        0 => {
+            send_notification(&String::from("Mirroring monitor"));
+            match mirror_monitor(primary_monitor, secondary_monitor) {
+                Ok(_) => {}
+                Err(e) => {
+                    panic!("Error trying to mirror monitor: {}", e)
+                }
+            }
+        }
+        1 => {
+            send_notification(&String::from("Extending monitor to left"));
+            match extend_to_left(primary_monitor, secondary_monitor) {
+                Ok(_) => {}
+                Err(e) => {
+                    panic!("Error trying to extend monitor to the left: {}", e)
+                }
+            }
+        }
+        2 => {
+            send_notification(&String::from("Extending monitor to right"));
+            match extend_to_right(primary_monitor, secondary_monitor) {
+                Ok(_) => {}
+                Err(e) => {
+                    panic!("Error trying to extend monitor to the right: {}", e)
+                }
+            }
+        }
+        _ => { panic!("Error out of bounds value") }
+    }
+}
+
+fn get_and_validate_monitors(config: &mut Config) -> Result<(Monitor, Monitor), Box<dyn Error>> {
+    let monitors = Monitors::get()?.to_vec();
+
+    if monitors.len() != 2 {
+        panic!("HyprDisplay can only handle two monitors at a time");
+    }
+
+    for monitor in &monitors {
+        if !config.monitors.contains_key(&monitor.description) {
+            println!("New monitor found adding to config");
+            config.monitors.insert(String::from(&monitor.description), monitor.clone());
+        }
+    }
+
+    let first_monitor = monitors.get(0).unwrap();
+    let second_monitor = monitors.get(1).unwrap();
+
+    let (primary_monitor, secondary_monitor) = if config.default == first_monitor.description {
+        (first_monitor, second_monitor)
+    } else {
+        (second_monitor, first_monitor)
+    };
+
+    if primary_monitor.description != config.default {
+        println!("No primary monitor found");
+        println!("Please set a default monitor\nExiting");
+        panic!("No default monitor");
+    }
+
+    Ok((primary_monitor.clone(), secondary_monitor.clone()))
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -216,65 +281,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         (None, false) | (Some(_), true) => { println!("Please supply either current_mode or mode see --help for usage") }
         (Some(mode), false) => { println!("TBD") }
         (None, true) => {
-            let monitors = Monitors::get()?.to_vec();
-
-            if monitors.len() != 2 {
-                panic!("HyprDisplay can only handle two monitors at a time")
-            }
-
-            for monitor in &monitors {
-                if !config.monitors.contains_key(&monitor.description) {
-                    println!("New monitor found adding to config");
-                    config.monitors.insert(String::from(&monitor.description), monitor.clone());
-                }
-            }
-
-            let first_monitor = monitors.get(0).unwrap();
-            let second_monitor = monitors.get(1).unwrap();
-
-            let (primary_monitor, secondary_monitor) = if config.default == first_monitor.description {
-                (first_monitor, second_monitor)
-            } else {
-                (second_monitor, first_monitor)
-            };
-
-            if primary_monitor.description != config.default {
-                println!("No primary monitor found");
-                println!("Please set a default monitor\nExiting");
-                panic!("No default monitor")
-            }
-
+            let (primary_monitor, secondary_monitor) = get_and_validate_monitors(&mut config)?;
             config.current_monitor_mode = (config.current_monitor_mode + 1) % 3;
-            match config.current_monitor_mode {
-                0 => {
-                    send_notication(&String::from("Mirroring monitor"));
-                    match mirror_monitor(primary_monitor, secondary_monitor) {
-                        Ok(_) => {}
-                        Err(e) => {
-                            panic!("Error trying to mirror monitor: {}", e)
-                        }
-                    }
-                }
-                1 => {
-                    send_notication(&String::from("Extending monitor to left"));
-                    match extend_to_left(primary_monitor, secondary_monitor) {
-                        Ok(_) => {}
-                        Err(e) => {
-                            panic!("Error trying to extend monitor to the left: {}", e)
-                        }
-                    }
-                }
-                2 => {
-                    send_notication(&String::from("Extending monitor to right"));
-                    match extend_to_right(primary_monitor, secondary_monitor) {
-                        Ok(_) => {}
-                        Err(e) => {
-                            panic!("Error trying to extend monitor to the right: {}", e)
-                        }
-                    }
-                }
-                _ => { panic!("Error out of bounds value") }
-            }
+            set_monitor_mode(config.current_monitor_mode, &primary_monitor, &secondary_monitor);
             write_config_file(config)
         }
     }
