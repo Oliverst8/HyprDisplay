@@ -15,4 +15,8 @@ pub(crate) struct Args {
     /// Whether to run setup
     #[arg(long)]
     pub(crate) setup: bool,
+
+    /// Whether to show selection menu
+    #[arg(long)]
+    pub(crate) menu: bool,
 }

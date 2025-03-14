@@ -8,6 +8,7 @@ use hyprland::prelude::{HyprData, HyprDataVec};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+#[derive(Clone)]
 pub(crate) struct Config {
     pub(crate) default: String,
     /// 0 = Mirror, 1 = extend left, 2 = extend right
