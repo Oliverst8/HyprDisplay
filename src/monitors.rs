@@ -161,3 +161,7 @@ pub(crate) fn get_and_validate_monitors(config: &mut Config) -> Result<(Monitor,
 
     Ok((primary_monitor.clone(), secondary_monitor.clone()))
 }
+
+pub(crate) fn get_all_connected_monitors() -> Vec<Monitor> {
+    Monitors::get().unwrap().to_vec()
+}

@@ -3,6 +3,7 @@ mod config;
 mod utils;
 mod monitors;
 mod menu;
+mod ui;
 
 use std::error::Error;
 use clap::Parser;
@@ -44,6 +45,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         _ => { println!("Please supply either current_mode or mode see --help for usage") }
     }
 
-
+    ui::main(get_config_file().unwrap()).expect("TODO: panic message");
     Ok(())
 }
