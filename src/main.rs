@@ -8,7 +8,7 @@ use std::error::Error;
 use clap::Parser;
 use crate::args::Args;
 use crate::config::{get_config_file, setup, write_config_file, Config};
-use crate::monitors::{apply_monitor_mode, get_and_validate_monitors};
+use crate::monitors::{apply_monitor_mode, get_and_validate_monitors, set_monitor_mode_by_string};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
@@ -28,7 +28,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     match (args.mode, args.next_mode) {
         (None, false) | (Some(_), true) => { println!("Please supply either current_mode or mode see --help for usage") }
-        (Some(mode), false) => { println!("TBD") }
+        (Some(mode), false) => {
+            let (primary_monitor, secondary_monitor) = get_and_validate_monitors(&mut config)?;
+            set_monitor_mode_by_string(config, &mode, &primary_monitor, &secondary_monitor)
+        }
         (None, true) => {
             let (primary_monitor, secondary_monitor) = get_and_validate_monitors(&mut config)?;
             config.current_monitor_mode = (config.current_monitor_mode + 1) % 3;

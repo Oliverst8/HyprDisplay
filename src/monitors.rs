@@ -107,6 +107,24 @@ fn set_monitor_mode(monitor_mode: u8, primary_monitor: &Monitor, secondary_monit
     }
 }
 
+pub(crate) fn set_monitor_mode_by_string(mut config: Config, mode: &str, primary_monitor: &Monitor, secondary_monitor: &Monitor) {
+    match mode {
+        "mirror" => {
+            config.current_monitor_mode = 0;
+            apply_monitor_mode(config, primary_monitor, secondary_monitor)
+        }
+        "extend_left" => {
+            config.current_monitor_mode = 1;
+            apply_monitor_mode(config, primary_monitor, secondary_monitor)
+        }
+        "extend_right" => {
+            config.current_monitor_mode = 2;
+            apply_monitor_mode(config, primary_monitor, secondary_monitor)
+        }
+        _ => { panic!("Invalid monitor mode: {}", mode) }
+    }
+}
+
 pub(crate) fn apply_monitor_mode(config: Config, primary_monitor: &Monitor, secondary_monitor: &Monitor) {
     set_monitor_mode(config.current_monitor_mode, primary_monitor, secondary_monitor);
     write_config_file(config);
