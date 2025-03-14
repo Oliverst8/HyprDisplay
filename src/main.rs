@@ -1,3 +1,5 @@
+mod args;
+
 use std::collections::HashMap;
 use std::error::Error;
 use std::{env, fs};
@@ -10,23 +12,8 @@ use serde::{Deserialize, Serialize};
 use std::io;
 use std::path::{Path, PathBuf};
 use clap::Parser;
+use crate::args::Args;
 
-/// A command-line tool for managing monitor configurations with Hyprland.
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Monitor mode to switch to, supports mirror extend left/right
-    #[arg(short, long)]
-    mode: Option<String>,
-
-    /// Switch to the next monitor mode
-    #[arg(short, long)]
-    next_mode: bool,
-
-    /// Whether to run setup
-    #[arg(long)]
-    setup: bool,
-}
 #[derive(Serialize, Deserialize)]
 struct Config {
     default: String,
