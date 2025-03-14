@@ -14,7 +14,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use clap::Parser;
 use crate::args::Args;
-use crate::config::{get_config_file, write_config_file, Config};
+use crate::config::{get_config_file, setup, write_config_file, Config};
 
 fn reset_to_default_monitor_settings(monitors: &Vec<&Monitor>) -> hyprland::Result<()> {
     for monitor in monitors {
@@ -82,50 +82,6 @@ fn extend_to_right(primary_monitor: &Monitor, secondary_monitor: &Monitor) -> hy
 
 fn extend_to_left(primary_monitor: &Monitor, secondary_monitor: &Monitor) -> hyprland::Result<()> {
     extend_to_right(secondary_monitor, primary_monitor)?;
-    Ok(())
-}
-
-
-fn setup() -> Result<(), Box<dyn Error>> {
-    let mut config = Config {
-        default: String::from(""),
-        monitors: HashMap::new(),
-        current_monitor_mode: 0,
-    };
-
-    let monitors = Monitors::get()?.to_vec();
-    println!("Welcome to HyprDisplay\nPlease select your default monitor:");
-    for (i, monitor) in monitors.iter().enumerate() {
-        println!("{}", format!("{index}:\n\tInput: {inputName}\n\tDescription: {description}", index = i, inputName = monitor.name, description = monitor.description));
-        config.monitors.insert((*monitor.description).to_string(), monitor.clone());
-    }
-
-    let mut user_input = String::new();
-    match io::stdin().read_line(&mut user_input) {
-        Ok(_) => {}
-        Err(error) => {
-            println!("error: {error}");
-            panic!();
-        }
-    }
-
-    let parsed_input = match user_input.trim().parse::<usize>() {
-        Ok(number) => if (number < monitors.len()) { number } else {
-            println!("Number out of range: {}", user_input);
-            panic!("Number out of range");
-        }
-
-        Err(error) => {
-            println!("Expected number in shown range: {}", user_input);
-            panic!("{}", error);
-        }
-    };
-    let default_monitor_description = &monitors[parsed_input].description;
-    println!("Setting {} as default monitor", *default_monitor_description);
-
-    config.default = String::from(default_monitor_description);
-    write_config_file(config);
-
     Ok(())
 }
 
