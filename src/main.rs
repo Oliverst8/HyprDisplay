@@ -3,17 +3,8 @@ mod config;
 mod utils;
 mod monitors;
 
-use std::collections::HashMap;
+
 use std::error::Error;
-use std::{env, fs};
-use hyprland::keyword::Keyword;
-use hyprland::data::*;
-use hyprland::prelude::*;
-use notify_rust::{Notification};
-use std::io::{BufReader, BufWriter};
-use serde::{Deserialize, Serialize};
-use std::io;
-use std::path::{Path, PathBuf};
 use clap::Parser;
 use crate::args::Args;
 use crate::config::{get_config_file, setup, write_config_file, Config};
