@@ -2,7 +2,7 @@ use std::error::Error;
 use hyprland::data::{Monitor, Monitors};
 use hyprland::keyword::Keyword;
 use hyprland::prelude::{HyprData, HyprDataVec};
-use crate::config::Config;
+use crate::config::{write_config_file, Config};
 use crate::utils::send_notification;
 
 fn reset_to_default_monitor_settings(monitors: &Vec<&Monitor>) -> hyprland::Result<()> {
@@ -74,7 +74,7 @@ fn extend_to_left(primary_monitor: &Monitor, secondary_monitor: &Monitor) -> hyp
     Ok(())
 }
 
-pub(crate) fn set_monitor_mode(monitor_mode: u8, primary_monitor: &Monitor, secondary_monitor: &Monitor) {
+fn set_monitor_mode(monitor_mode: u8, primary_monitor: &Monitor, secondary_monitor: &Monitor) {
     match monitor_mode {
         0 => {
             send_notification(&String::from("Mirroring monitor"));
@@ -105,6 +105,11 @@ pub(crate) fn set_monitor_mode(monitor_mode: u8, primary_monitor: &Monitor, seco
         }
         _ => { panic!("Error out of bounds value") }
     }
+}
+
+pub(crate) fn apply_monitor_mode(config: Config, primary_monitor: &Monitor, secondary_monitor: &Monitor) {
+    set_monitor_mode(config.current_monitor_mode, primary_monitor, secondary_monitor);
+    write_config_file(config);
 }
 
 pub(crate) fn get_and_validate_monitors(config: &mut Config) -> Result<(Monitor, Monitor), Box<dyn Error>> {
