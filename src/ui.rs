@@ -93,10 +93,11 @@ fn render(frame: &mut Frame, app_state: &AppState) {
         let scaled_width = (monitor.width as f32 * scale_factor) as u16;
         let scaled_height = (monitor.height as f32 * scale_factor * terminal_aspect_correction) as u16;
 
-
+        let x = (display.width / 2) + (monitor.x as f32 * scale_factor) as u16;
+        let y = (display.height / 2) + (monitor.y as f32 * scale_factor * terminal_aspect_correction) as u16;
         let monitor_rect = Rect {
-            x: (display.width / 2) + (monitor.x as f32 * scale_factor) as u16,
-            y: (display.height / 2) + (monitor.y as f32 * scale_factor * terminal_aspect_correction) as u16,
+            x: x - (scaled_width / 2),
+            y: y - (scaled_height / 2),
             width: scaled_width,
             height: scaled_height,
         };
