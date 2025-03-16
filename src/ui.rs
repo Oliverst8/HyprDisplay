@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use color_eyre::Result;
 use ratatui::{
     layout::{Constraint, Layout},
@@ -17,19 +18,44 @@ use crate::monitors::get_all_connected_monitors;
 
 struct AppState {
     monitors: Vec<Monitor>,
+    displays: HashMap<String, Display>,
     config: Config,
     middle_x: u16,
     middle_y: u16,
     fullscreen: bool,
     selected_section: usize,
+    default: String,
+}
+
+///Display being shown on screen
+struct Display {
+    x: u16,
+    y: u16,
+    width: u16,
+    height: u16,
+    id: u16,
 }
 
 impl AppState {
     fn new(monitors: Vec<Monitor>, config: Config, middle_x: u16, middle_y: u16) -> Self {
         Self {
-            //square_x: 2,
-            //square_y: 2,
-
+            displays: {
+                let mut displays = HashMap::<String, Display>::new();
+                let mut id = 0;
+                for monitor in &monitors {
+                    let display = Display {
+                        x: monitor.x as u16,
+                        y: monitor.y as u16,
+                        width: monitor.width,
+                        height: monitor.height,
+                        id,
+                    };
+                    displays.insert(monitor.description.clone(), display);
+                    id += 1;
+                }
+                displays
+            },
+            default: config.default.clone(),
             monitors,
             config,
             middle_x,
@@ -85,23 +111,25 @@ fn render(frame: &mut Frame, app_state: &AppState) {
     let [display] = display_area.areas(frame.area());
 
     frame.render_widget(Block::bordered().title("Displays"), display);
+    let default_monitor = &app_state.config.monitors.get(&app_state.default).unwrap();
+    let scale_factor = 1.0 / 70.0;
+    let terminal_aspect_correction = get_terminal_aspect_ratio();
+    let x_offset = (default_monitor.width as f32 * scale_factor) as u16 / 2;
+    let y_offset = (default_monitor.height as f32 * scale_factor * terminal_aspect_correction) as u16 / 2;
+
+    //for (name, monitor) in &app_state.displays {
     for monitor in &app_state.monitors {
-        let scale_factor = 1.0 / 70.0;
-
-        let terminal_aspect_correction = get_terminal_aspect_ratio();
-
         let scaled_width = (monitor.width as f32 * scale_factor) as u16;
         let scaled_height = (monitor.height as f32 * scale_factor * terminal_aspect_correction) as u16;
 
-        let x = (display.width / 2) + (monitor.x as f32 * scale_factor) as u16;
-        let y = (display.height / 2) + (monitor.y as f32 * scale_factor * terminal_aspect_correction) as u16;
+        let x = display.width / 2 + ((default_monitor.scale * monitor.x as f32) * scale_factor) as u16;
+        let y = display.height / 2 + ((default_monitor.scale * monitor.y as f32) * scale_factor * terminal_aspect_correction) as u16;
         let monitor_rect = Rect {
-            x: x - (scaled_width / 2),
-            y: y - (scaled_height / 2),
+            x: x - x_offset,
+            y: y - y_offset,
             width: scaled_width,
             height: scaled_height,
         };
-
         frame.render_widget(Block::bordered().title("Inner Rect"), monitor_rect);
     }
 }
